@@ -114,6 +114,7 @@ class Game {
   draw(ctx) {
     const astros = this.astros;
     this.checkCollision();
+    this.checkGameOver();
     this.addAstro();
     ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
     this.drawShip(this.ship, ctx);
@@ -291,6 +292,18 @@ class Game {
     }else {
       this.level = 4;
       document.getElementById("game").className = "black";
+    }
+  }
+  
+  checkGameOver() {
+    if (this.lives < 0) {
+      alert("Game Over. Click OK to play again");
+      this.score = 0;
+      this.lives = 5;
+      this.astros = [];
+      this.hurricanes = [];
+      this.bullets = [];
+      this.ship.posX =143;
     }
   }
   
