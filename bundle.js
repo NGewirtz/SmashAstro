@@ -92,6 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ship_js__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bullet_js__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astro_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hurricane_js__ = __webpack_require__(8);
+
+
 
 
 
@@ -100,31 +103,54 @@ class Game {
     this.ship = new __WEBPACK_IMPORTED_MODULE_0__ship_js__["a" /* default */](this);
     this.bullets = [];
     this.astros = [];
-    this.hurricane = null;
+    this.hurricanes = [];
     this.score = 0;
-    this.lives = 3;
+    this.lives = 5;
   }
   
   draw(ctx) {
-    const ship = this.ship;
-    const bullets = this.bullets;
     const astros = this.astros;
+    this.checkCollision();
     this.addAstro();
+    this.drawShip(this.ship, ctx);
+    this.drawBullets(this.bullets, ctx);
+    this.drawEnemies(this.astros.concat(this.hurricanes), ctx);
+    this.displayGameState(ctx);
+  }
+  
+  drawShip(ship, ctx) {
     ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
+    ctx.fillStyle = ship.color;
     ctx.fillRect(ship.posX, ship.posY, ship.width, ship.height);
+  }
+  
+  drawBullets(bullets, ctx) {
     bullets.forEach(bullet => {
       bullet.posY -= 6;
       if (bullet.posY < 0) {
         this.removeObject(bullet)
       }
-      ctx.fillRect(bullet.posX, bullet.posY, 2, 2);
+      ctx.fillStyle = "black";
+      ctx.fillRect(bullet.posX, bullet.posY, 2, 6);
     })
-    astros.forEach(astro => {
-      astro.posY += astro.speed
-      astro.posX += astro.angle
-      this.outOfBoundsCheck(astro);
-      ctx.fillRect(astro.posX, astro.posY, 10, 10);
+  }
+  
+  drawEnemies(enemies, ctx) {
+    enemies.forEach(enemy => {
+      enemy.posY += enemy.speed
+      enemy.posX += enemy.angle
+      this.outOfBoundsCheck(enemy);
+      ctx.fillStyle = enemy.color;
+      ctx.fillRect(enemy.posX, enemy.posY, enemy.size.width, enemy.size.height);
     })
+  }
+  
+  displayGameState(ctx) {
+    ctx.font = "8px";
+    const color = this.hurricanes.length > 0 ? "red" : "black";
+    ctx.fillStyle = color
+    ctx.fillText(`Score :${this.score}`,20,8);
+    ctx.fillText(`Lives :${this.lives}`,240,8);
   }
   
   addBullet(bullet) {
@@ -132,25 +158,117 @@ class Game {
   }
   
   addAstro() {
-    if (this.astros.length < 6 && (Math.random() > .95)) {
-      this.astros.push (new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]());
+    if (this.astros.length < 5 && (Math.random() > .95)) {
+      this.astros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]());
+    }
+    if (Math.floor(Math.random() * 1000) > 997) {
+      this.hurricanes.push(new __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]());
     }
   }
   
   outOfBoundsCheck(enemy) {
-    if (enemy.posX < 0 || enemy.posX > 300 || enemy.posY > 150) {
-      this.removeObject(enemy);
+    if (enemy instanceof __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]) {
+      if (enemy.posY > 150) {
+        this.removeObject(enemy);
+        this.loseLife()
+      }else if (enemy.posX <= 0 || enemy.posX + enemy.size.width > 300) {
+        enemy.angle = enemy.angle * -1;
+      }
+    }else {
+      if (enemy.posY > 150) {
+        this.score -= 20
+        console.log(this.score)
+      }
+      if (enemy.posX <= 0 || enemy.posX > 300 || enemy.posY > 150) {
+        this.removeObject(enemy);
+      }
     }
   }
   
   removeObject(object) {
     if (object instanceof __WEBPACK_IMPORTED_MODULE_1__bullet_js__["a" /* default */]) {
      this.bullets.splice(this.bullets.indexOf(object), 1);
+   } else if (object instanceof __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]) {
+     this.hurricanes.splice(this.hurricanes.indexOf(object), 1);
    } else if (object instanceof __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]) {
      this.astros.splice(this.astros.indexOf(object), 1);
-   } else if (object instanceof Hurricane) {
-     this.objects.hurricane = null;
    } 
+  }
+  
+  checkShotAstro() {
+    
+  }
+  
+  checkCollision() {
+    this.astros.concat(this.hurricanes).forEach(astro => {
+      if (((astro.posY + astro.size.height) >= 135) && this.shipHitAstro(astro)) {
+        this.removeObject(astro)
+        this.loseLife()
+      }else if (this.shotAstro(astro)){
+        this.resolveShotAstro(astro)
+      }
+    });
+  }
+  
+  loseLife(){
+    this.lives -= 1;
+    console.log("lives "+ this.lives)
+  }
+  
+  shipHitAstro(astro) {
+    const shipEnd = this.ship.posX + this.ship.width;
+    const astroEnd = astro.posX + astro.size.width;
+    if (astro.posX < this.ship.posX) {
+      if (astroEnd >= this.ship.posX) {
+        return true;
+      }
+    } else if (astro.posX === this.ship.posX) {
+      return true;
+    }else if (shipEnd >= astro.posX ){
+      return true;
+    }
+    return false;
+  }
+  
+  shotAstro(astro) {
+    const astroXEnd = astro.posX + astro.size.width;
+    const astroYEnd = astro.posY + astro.size.height;
+    let hit = false;
+    this.bullets.forEach(bullet => {
+      if( ( (bullet.posX >= astro.posX) && bullet.posX <= astroXEnd) &&
+      (bullet.posY >= astro.posY && bullet.posY <= astroYEnd ) ){
+        this.removeObject(bullet)
+        hit = true;
+      }
+    })
+    return hit;
+  }
+  
+  resolveShotAstro(astro) {
+    if (astro.size.size === "small") {
+      this.removeObject(astro);
+      this.score += 100
+      console.log(this.score)
+    }else if (astro.size.size === "large"){
+      const newAstroLeft =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](astro.posX, astro.posY, null, -1.25, {
+        size: 'small',
+        width: 8,
+        height: 6
+      })
+      const newAstroRight =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](astro.posX, astro.posY, null, 1, {
+        size: 'small',
+        width: 8,
+        height: 6
+      })
+      this.astros.push(newAstroLeft, newAstroRight);
+      this.removeObject(astro)
+      this.score += 50;
+      console.log(this.score);
+    }else if (astro.size.size === "hurricane") {
+      this.removeObject(astro);
+      this.score += 200
+      console.log(this.score)
+    }
   }
   
 }
@@ -205,7 +323,7 @@ class View {
 class Ship {
   constructor(game) {
     this.game = game;
-    this.posX = 130;
+    this.posX = 143;
     this.posY = 135;
     this.height = 15;
     this.width = 8;
@@ -224,9 +342,9 @@ class Ship {
   
   move(dir) {
     if (dir === "left") {
-      this.posX -= 5;
+      this.posX -= 8;
     }else {
-      this.posX += 5;
+      this.posX += 8;
     }
   }
 }
@@ -256,19 +374,21 @@ class Bullet {
 
 "use strict";
 class Astro {
-  constructor() {
-    this.posX = this.randX();
-    this.posY = 0;
-    this.speed = this.randSpeed();
-    this.angle = this.randAngle();
+  constructor(posX, posY, speed, angle, size) {
+    this.posX = posX || this.randX();
+    this.posY = posY || 0;
+    this.speed = speed || this.randSpeed();
+    this.angle = angle || this.randAngle();
+    this.size = size || this.randSize();
+    this.color = "black"
   }
   
   randX() {
-    return Math.floor(Math.random() * 300);
+    return Math.floor(Math.random() * 283);
   }
   
   randAngle() {
-    const angles = [-2.5,-2,-1,-.5,.5,1,2,2.5];
+    const angles = [-1.75, -1.5, -1.25, -1, -.75, -.5, .5, .75, 1, 1.25, 1.5, 1.75];
     const idx = Math.floor(Math.random() * angles.length);
     return angles[idx];
   }
@@ -283,9 +403,48 @@ class Astro {
       return 1;
     }
   }
+  
+  randSize() {
+    const weightSize = Math.floor(Math.random() * 100)
+    if (weightSize < 75) {
+      return {
+        size: 'large',
+        width: 16,
+        height: 12
+      }
+    }else {
+      return {
+        size: 'small',
+        width: 8,
+        height: 6
+      }
+    }
+  }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Astro);
+
+/***/ }),
+/* 7 */,
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__astro_js__ = __webpack_require__(6);
+
+
+class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__astro_js__["a" /* default */] {
+  constructor() {
+    super(null, null, .75, null, {
+      size: 'hurricane',
+      width: 16,
+      height: 12
+    });
+    this.color = "red";
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Hurricane);
 
 /***/ })
 /******/ ]);
