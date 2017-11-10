@@ -99,21 +99,30 @@ class Game {
   constructor() {
     this.ship = new __WEBPACK_IMPORTED_MODULE_0__ship_js__["a" /* default */](this);
     this.bullets = [];
-    this.astros = [new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]];
-    this.hurricane = [];
+    this.astros = [];
+    this.hurricane = null;
     this.score = 0;
+    this.lives = 3;
   }
   
   draw(ctx) {
+    const ship = this.ship;
+    const bullets = this.bullets;
+    const astros = this.astros;
+    this.addAstro();
     ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
-    ctx.fillRect(this.ship.posX, this.ship.posY, this.ship.width, this.ship.height);
-    this.bullets.forEach(bullet => {
-      bullet.posY -= 4;
+    ctx.fillRect(ship.posX, ship.posY, ship.width, ship.height);
+    bullets.forEach(bullet => {
+      bullet.posY -= 6;
+      if (bullet.posY < 0) {
+        this.removeObject(bullet)
+      }
       ctx.fillRect(bullet.posX, bullet.posY, 2, 2);
     })
-    this.astros.forEach(astro => {
+    astros.forEach(astro => {
       astro.posY += astro.speed
       astro.posX += astro.angle
+      this.outOfBoundsCheck(astro);
       ctx.fillRect(astro.posX, astro.posY, 10, 10);
     })
   }
@@ -123,7 +132,25 @@ class Game {
   }
   
   addAstro() {
-    this.astros.push (new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]());
+    if (this.astros.length < 6 && (Math.random() > .95)) {
+      this.astros.push (new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]());
+    }
+  }
+  
+  outOfBoundsCheck(enemy) {
+    if (enemy.posX < 0 || enemy.posX > 300 || enemy.posY > 150) {
+      this.removeObject(enemy);
+    }
+  }
+  
+  removeObject(object) {
+    if (object instanceof __WEBPACK_IMPORTED_MODULE_1__bullet_js__["a" /* default */]) {
+     this.bullets.splice(this.bullets.indexOf(object), 1);
+   } else if (object instanceof __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]) {
+     this.astros.splice(this.astros.indexOf(object), 1);
+   } else if (object instanceof Hurricane) {
+     this.objects.hurricane = null;
+   } 
   }
   
 }
@@ -197,9 +224,9 @@ class Ship {
   
   move(dir) {
     if (dir === "left") {
-      this.posX -= 3;
+      this.posX -= 5;
     }else {
-      this.posX += 3;
+      this.posX += 5;
     }
   }
 }
@@ -230,10 +257,31 @@ class Bullet {
 "use strict";
 class Astro {
   constructor() {
-    this.posX = 80;
+    this.posX = this.randX();
     this.posY = 0;
-    this.speed = 2; // 1-3
-    this.angle = -1; // -3 .... 3
+    this.speed = this.randSpeed();
+    this.angle = this.randAngle();
+  }
+  
+  randX() {
+    return Math.floor(Math.random() * 300);
+  }
+  
+  randAngle() {
+    const angles = [-2.5,-2,-1,-.5,.5,1,2,2.5];
+    const idx = Math.floor(Math.random() * angles.length);
+    return angles[idx];
+  }
+  
+  randSpeed(level) {
+    const weightSpeed = Math.floor(Math.random() * 100)
+    if (weightSpeed > 90) {
+      return 3;
+    }else if (weightSpeed > 50) {
+      return 2;
+    }else {
+      return 1;
+    }
   }
 }
 
