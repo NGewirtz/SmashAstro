@@ -108,6 +108,7 @@ class Game {
     this.hurricanes = [];
     this.score = 0;
     this.lives = 5;
+    this.level = 0
   }
   
   draw(ctx) {
@@ -119,6 +120,7 @@ class Game {
     this.drawBullets(this.bullets, ctx);
     this.drawEnemies(this.astros.concat(this.hurricanes), ctx);
     this.displayGameState(ctx);
+    this.setLevel()
   }
   
   drawShip(ship, ctx) {
@@ -162,7 +164,7 @@ class Game {
     ctx.font = "12px Comic Sans MS";
     const color = this.hurricanes.length > 0 ? "red" : "white";
     ctx.fillStyle = color
-    ctx.fillText(`Score :${this.score}`,20,20);
+    ctx.fillText(`Score :${this.score}`,10,20);
     ctx.fillText(`Lives :${this.lives}`,240,20);
   }
   
@@ -172,10 +174,10 @@ class Game {
   
   addAstro() {
     if (this.astros.length < 6 && (Math.random() > .95)) {
-      this.astros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]());
+      this.astros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level));
     }
     if (Math.floor(Math.random() * 1000) > 997) {
-      this.hurricanes.push(new __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]());
+      this.hurricanes.push(new __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */](this.level));
     }
   }
   
@@ -190,7 +192,6 @@ class Game {
     }else {
       if (enemy.posY > 300) {
         this.score -= 20
-        console.log(this.score)
       }
       if (enemy.posX <= 0 || enemy.posX > 300 || enemy.posY > 300) {
         this.removeObject(enemy);
@@ -209,43 +210,42 @@ class Game {
   }
 
   checkCollision() {
-    this.astros.concat(this.hurricanes).forEach(astro => {
-      if (((astro.posY + astro.size.height) >= 285) && this.shipHitAstro(astro)) {
-        this.removeObject(astro)
+    this.astros.concat(this.hurricanes).forEach(enemy => {
+      if (((enemy.posY + enemy.size.height) >= 285) && this.shipHitEnemy(enemy)) {
+        this.removeObject(enemy)
         this.loseLife()
-      }else if (this.shotAstro(astro)){
-        this.resolveShotAstro(astro)
+      }else if (this.shotEnemy(enemy)){
+        this.resolveShotEnemy(enemy)
       }
     });
   }
   
   loseLife(){
     this.lives -= 1;
-    console.log("lives "+ this.lives)
   }
   
-  shipHitAstro(astro) {
+  shipHitEnemy(enemy) {
     const shipEnd = this.ship.posX + this.ship.width;
-    const astroEnd = astro.posX + astro.size.width;
-    if (astro.posX < this.ship.posX) {
-      if (astroEnd >= this.ship.posX) {
+    const enemyEnd = enemy.posX + enemy.size.width;
+    if (enemy.posX < this.ship.posX) {
+      if (enemyEnd >= this.ship.posX) {
         return true;
       }
-    } else if (astro.posX === this.ship.posX) {
+    } else if (enemy.posX === this.ship.posX) {
       return true;
-    }else if (shipEnd >= astro.posX ){
+    }else if (shipEnd >= enemy.posX ){
       return true;
     }
     return false;
   }
   
-  shotAstro(astro) {
-    const astroXEnd = astro.posX + astro.size.width;
-    const astroYEnd = astro.posY + astro.size.height;
+  shotEnemy(enemy) {
+    const enemyXEnd = enemy.posX + enemy.size.width;
+    const enemyYEnd = enemy.posY + enemy.size.height;
     let hit = false;
     this.bullets.forEach(bullet => {
-      if( ( (bullet.posX >= astro.posX) && bullet.posX <= astroXEnd) &&
-      (bullet.posY >= astro.posY && bullet.posY <= astroYEnd ) ){
+      if( ( (bullet.posX >= enemy.posX) && bullet.posX <= enemyXEnd) &&
+      (bullet.posY >= enemy.posY && bullet.posY <= enemyYEnd ) ){
         this.removeObject(bullet)
         hit = true;
       }
@@ -253,30 +253,44 @@ class Game {
     return hit;
   }
   
-  resolveShotAstro(astro) {
-    if (astro.size.size === "small") {
-      this.removeObject(astro);
+  resolveShotEnemy(enemy) {
+    if (enemy.size.size === "small") {
+      this.removeObject(enemy);
       this.score += 100
-      console.log(this.score)
-    }else if (astro.size.size === "large"){
-      const newAstroLeft =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](astro.posX, astro.posY, null, -1.25, {
+    }else if (enemy.size.size === "large"){
+      const angle = enemy.angle > 0 ? enemy.angle : -enemy.angle 
+      const newAstroLeft =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, -angle - .1, {
         size: 'small',
         width: 8,
         height: 6
       })
-      const newAstroRight =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](astro.posX, astro.posY, null, 1, {
+      const newAstroRight =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, angle + .1, {
         size: 'small',
         width: 8,
         height: 6
       })
       this.astros.push(newAstroLeft, newAstroRight);
-      this.removeObject(astro)
+      this.removeObject(enemy)
       this.score += 50;
-      console.log(this.score);
-    }else if (astro.size.size === "hurricane") {
-      this.removeObject(astro);
+    }else if (enemy.size.size === "hurricane") {
+      this.removeObject(enemy);
       this.score += 200
-      console.log(this.score)
+    }
+  }
+  
+  setLevel() {
+    if (this.score < 1000) {
+      this.level = 1;
+      document.getElementById("game").className = "black";
+    }else if (this.score >= 1000 && this.score < 4000) {
+      this.level = 2;
+      document.getElementById("game").className = "blue";
+    }else if (this.score >= 4000 && this.score < 10000){
+      this.level = 3;
+      document.getElementById("game").className = "grey";
+    }else {
+      this.level = 4;
+      document.getElementById("game").className = "black";
     }
   }
   
@@ -333,7 +347,6 @@ class Ship {
     this.posY = 285;
     this.height = 15;
     this.width = 8;
-    this.color = "blue"
   }
   
   draw(ctx) {
@@ -348,9 +361,9 @@ class Ship {
   
   move(dir) {
     if (dir === "left") {
-      this.posX -= 8;
+      this.posX = this.posX <= 8 ? 0 : this.posX - 8;
     }else {
-      this.posX += 8;
+      this.posX = this.posX >= 277 ? 285 : this.posX + 8;
     }
   }
 }
@@ -380,13 +393,12 @@ class Bullet {
 
 "use strict";
 class Astro {
-  constructor(posX, posY, speed, angle, size) {
+  constructor(level, posX, posY, speed, angle, size) {
     this.posX = posX || this.randX();
     this.posY = posY || 0;
-    this.speed = speed || this.randSpeed();
+    this.speed = speed || this.randSpeed(level);
     this.angle = angle || this.randAngle();
     this.size = size || this.randSize();
-    this.color = "black"
   }
   
   randX() {
@@ -394,19 +406,32 @@ class Astro {
   }
   
   randAngle() {
-    const angles = [-1.5, -1.25, -1, -.75, -.5, .5, .75, 1, 1.25, 1.5];
+    const angles = [-1.1, -.9, -.65, -.25, .25, .65, .9, 1.1];
     const idx = Math.floor(Math.random() * angles.length);
+    console.log(idx)
     return angles[idx];
   }
   
   randSpeed(level) {
     const weightSpeed = Math.floor(Math.random() * 100)
-    if (weightSpeed > 80) {
-      return 3;
-    }else if (weightSpeed > 35) {
-      return 2;
+    const odds = {
+      1: 80,
+      2: 50,
+      3: 80,
+      4: 50
+    }
+    const speeds = {
+      1: [3,2,1],
+      2: [3,2,1],
+      3: [4,3,2],
+      4: [4,3,2]
+    }
+    if (weightSpeed > odds[level]) {
+      return speeds[level][0];
+    }else if (weightSpeed > odds[level]) {
+      return speeds[level[1]];
     }else {
-      return 1;
+      return speeds[level][2];
     }
   }
   
@@ -440,13 +465,12 @@ class Astro {
 
 
 class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__astro_js__["a" /* default */] {
-  constructor() {
-    super(null, null, 1, null, {
+  constructor(level) {
+    super(level, null, null, .75 * level, null, {
       size: 'hurricane',
       width: 16,
       height: 16
     });
-    this.color = "red";
   }
 }
 

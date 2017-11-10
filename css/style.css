@@ -1,12 +1,43 @@
 canvas {
   height: 600px;
   width: 600px;
-  border: 5px solid red;
-  margin: 0;
-  background-color: black;
+  border: 5px solid white;
+  display: inline;
+}
+
+h1 {
+  color: white;
+  text-align: center;
+  font-family: 'Fjalla One', sans-serif;
+  font-size: 36px;
+}
+
+body {
+  background-image: url("../imgs/background.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
 }
 
 img {
   height: 15px;
   width: 10px;
+}
+
+.container {
+   width: 100%;
+   text-align:center;
+}
+
+
+.grey {
+  background-color: #6e7a8c;
+}
+
+.blue {
+  background-color: blue;
+}
+
+.black {
+  background-color: black;
 }
