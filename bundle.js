@@ -77,9 +77,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  const game = new __WEBPACK_IMPORTED_MODULE_0__game_js__["a" /* default */]()
-  const view = new __WEBPACK_IMPORTED_MODULE_1__view_js__["a" /* default */](game, ctx)
-  view.start()
+  const game = new __WEBPACK_IMPORTED_MODULE_0__game_js__["a" /* default */]();
+  canvas.height = 300;
+  canvas.width = 300;
+  const view = new __WEBPACK_IMPORTED_MODULE_1__view_js__["a" /* default */](game, ctx);
+  view.start();
 })
 
 
@@ -112,6 +114,7 @@ class Game {
     const astros = this.astros;
     this.checkCollision();
     this.addAstro();
+    ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
     this.drawShip(this.ship, ctx);
     this.drawBullets(this.bullets, ctx);
     this.drawEnemies(this.astros.concat(this.hurricanes), ctx);
@@ -119,9 +122,9 @@ class Game {
   }
   
   drawShip(ship, ctx) {
-    ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
-    ctx.fillStyle = ship.color;
-    ctx.fillRect(ship.posX, ship.posY, ship.width, ship.height);
+    const shipImg = new Image(30, 30);
+    shipImg.src = './imgs/ship3.png';
+    ctx.drawImage(shipImg, ship.posX, ship.posY);
   }
   
   drawBullets(bullets, ctx) {
@@ -130,7 +133,7 @@ class Game {
       if (bullet.posY < 0) {
         this.removeObject(bullet)
       }
-      ctx.fillStyle = "black";
+      ctx.fillStyle = "white";
       ctx.fillRect(bullet.posX, bullet.posY, 2, 6);
     })
   }
@@ -140,17 +143,27 @@ class Game {
       enemy.posY += enemy.speed
       enemy.posX += enemy.angle
       this.outOfBoundsCheck(enemy);
-      ctx.fillStyle = enemy.color;
-      ctx.fillRect(enemy.posX, enemy.posY, enemy.size.width, enemy.size.height);
+      let enemyImg;
+      if (enemy.size.size === "large") {
+        enemyImg = new Image(16, 16);
+        enemyImg.src = './imgs/Asteroid2.png';
+      }else if (enemy.size.size === "small") {
+        enemyImg = new Image(8, 8);
+        enemyImg.src = './imgs/Asteroid3.png';
+      }else if (enemy.size.size === "hurricane") {
+        enemyImg = new Image(16, 16);
+        enemyImg.src = './imgs/hurricane.png';
+      }
+      ctx.drawImage(enemyImg, enemy.posX, enemy.posY);
     })
   }
   
   displayGameState(ctx) {
-    ctx.font = "8px";
-    const color = this.hurricanes.length > 0 ? "red" : "black";
+    ctx.font = "12px Comic Sans MS";
+    const color = this.hurricanes.length > 0 ? "red" : "white";
     ctx.fillStyle = color
-    ctx.fillText(`Score :${this.score}`,20,8);
-    ctx.fillText(`Lives :${this.lives}`,240,8);
+    ctx.fillText(`Score :${this.score}`,20,20);
+    ctx.fillText(`Lives :${this.lives}`,240,20);
   }
   
   addBullet(bullet) {
@@ -158,7 +171,7 @@ class Game {
   }
   
   addAstro() {
-    if (this.astros.length < 5 && (Math.random() > .95)) {
+    if (this.astros.length < 6 && (Math.random() > .95)) {
       this.astros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]());
     }
     if (Math.floor(Math.random() * 1000) > 997) {
@@ -168,18 +181,18 @@ class Game {
   
   outOfBoundsCheck(enemy) {
     if (enemy instanceof __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]) {
-      if (enemy.posY > 150) {
+      if (enemy.posY > 300) {
         this.removeObject(enemy);
         this.loseLife()
       }else if (enemy.posX <= 0 || enemy.posX + enemy.size.width > 300) {
         enemy.angle = enemy.angle * -1;
       }
     }else {
-      if (enemy.posY > 150) {
+      if (enemy.posY > 300) {
         this.score -= 20
         console.log(this.score)
       }
-      if (enemy.posX <= 0 || enemy.posX > 300 || enemy.posY > 150) {
+      if (enemy.posX <= 0 || enemy.posX > 300 || enemy.posY > 300) {
         this.removeObject(enemy);
       }
     }
@@ -194,14 +207,10 @@ class Game {
      this.astros.splice(this.astros.indexOf(object), 1);
    } 
   }
-  
-  checkShotAstro() {
-    
-  }
-  
+
   checkCollision() {
     this.astros.concat(this.hurricanes).forEach(astro => {
-      if (((astro.posY + astro.size.height) >= 135) && this.shipHitAstro(astro)) {
+      if (((astro.posY + astro.size.height) >= 285) && this.shipHitAstro(astro)) {
         this.removeObject(astro)
         this.loseLife()
       }else if (this.shotAstro(astro)){
@@ -276,9 +285,6 @@ class Game {
 Game.DIM_X = 800;
 Game.DIM_Y = 600;
 
-
-
-
 /* harmony default export */ __webpack_exports__["a"] = (Game);
 
 /***/ }),
@@ -324,7 +330,7 @@ class Ship {
   constructor(game) {
     this.game = game;
     this.posX = 143;
-    this.posY = 135;
+    this.posY = 285;
     this.height = 15;
     this.width = 8;
     this.color = "blue"
@@ -360,7 +366,7 @@ class Ship {
 class Bullet {
   constructor(posX){
     this.posX = posX + 3;
-    this.posY = 135;
+    this.posY = 285;
   }
 }
 
@@ -388,16 +394,16 @@ class Astro {
   }
   
   randAngle() {
-    const angles = [-1.75, -1.5, -1.25, -1, -.75, -.5, .5, .75, 1, 1.25, 1.5, 1.75];
+    const angles = [-1.5, -1.25, -1, -.75, -.5, .5, .75, 1, 1.25, 1.5];
     const idx = Math.floor(Math.random() * angles.length);
     return angles[idx];
   }
   
   randSpeed(level) {
     const weightSpeed = Math.floor(Math.random() * 100)
-    if (weightSpeed > 90) {
+    if (weightSpeed > 80) {
       return 3;
-    }else if (weightSpeed > 50) {
+    }else if (weightSpeed > 35) {
       return 2;
     }else {
       return 1;
@@ -410,13 +416,13 @@ class Astro {
       return {
         size: 'large',
         width: 16,
-        height: 12
+        height: 16
       }
     }else {
       return {
         size: 'small',
         width: 8,
-        height: 6
+        height: 8
       }
     }
   }
@@ -435,10 +441,10 @@ class Astro {
 
 class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__astro_js__["a" /* default */] {
   constructor() {
-    super(null, null, .75, null, {
+    super(null, null, 1, null, {
       size: 'hurricane',
       width: 16,
-      height: 12
+      height: 16
     });
     this.color = "red";
   }
