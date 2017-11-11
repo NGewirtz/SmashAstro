@@ -327,7 +327,7 @@ class View {
   
   bindKeyHandlers() {
     const ship = this.game.ship
-    key("left", () => { ship.move("left")   });
+    key("left", () => { ship.move("left") });
     key("right", () => { ship.move("right") });
     key("space", () => { ship.shoot() });
   }
@@ -362,11 +362,6 @@ class Ship {
     this.width = 8;
   }
   
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.posX, this.posY, 10, 15);
-  }
-  
   shoot() {
     const bullet = new __WEBPACK_IMPORTED_MODULE_0__bullet__["a" /* default */](this.posX);
     this.game.addBullet(bullet);
@@ -391,7 +386,7 @@ class Ship {
 "use strict";
 class Bullet {
   constructor(posX){
-    this.posX = posX + 3;
+    this.posX = posX + 6;
     this.posY = 285;
   }
 }
@@ -421,17 +416,16 @@ class Astro {
   randAngle() {
     const angles = [-1.1, -.9, -.65, -.25, .25, .65, .9, 1.1];
     const idx = Math.floor(Math.random() * angles.length);
-    console.log(idx)
     return angles[idx];
   }
   
   randSpeed(level) {
     const weightSpeed = Math.floor(Math.random() * 100)
     const odds = {
-      1: 80,
-      2: 50,
-      3: 80,
-      4: 50
+      1: [85, 40],
+      2: [50, 10],
+      3: [80, 35],
+      4: [50, 10]
     }
     const speeds = {
       1: [3,2,1],
@@ -439,10 +433,10 @@ class Astro {
       3: [4,3,2],
       4: [4,3,2]
     }
-    if (weightSpeed > odds[level]) {
+    if (weightSpeed > odds[level][0]) {
       return speeds[level][0];
-    }else if (weightSpeed > odds[level]) {
-      return speeds[level[1]];
+    }else if (weightSpeed > odds[level][1]) {
+      return speeds[level][1];
     }else {
       return speeds[level][2];
     }
