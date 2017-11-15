@@ -78,7 +78,6 @@ class Bullet {
 /* harmony default export */ __webpack_exports__["a"] = (Bullet);
 
 
-
 /***/ }),
 /* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -89,34 +88,34 @@ class Astro {
     this.posX = posX || this.randX();
     this.posY = posY || 0;
     this.speed = speed || this.randSpeed(level);
-    this.angle = angle || 0
+    this.angle = angle || 0;
     this.size = size || this.randSize();
   }
-  
+
   randX() {
     return Math.floor(Math.random() * 283);
   }
-  
+
   randAngle() {
     const angles = [-1.1, -.9, -.65, -.25, .25, .65, .9, 1.1];
     const idx = Math.floor(Math.random() * angles.length);
     return angles[idx];
   }
-  
+
   randSpeed(level) {
-    const weightSpeed = Math.floor(Math.random() * 100)
+    const weightSpeed = Math.floor(Math.random() * 100);
     const odds = {
       1: [85, 40],
       2: [50, 10],
       3: [80, 35],
       4: [50, 10]
-    }
+    };
     const speeds = {
       1: [2.25,1.5,.75],
       2: [2.5,1.75,1],
       3: [3.5,2.5,1.5],
       4: [4,3,2]
-    }
+    };
     if (weightSpeed > odds[level][0]) {
       return speeds[level][0];
     }else if (weightSpeed > odds[level][1]) {
@@ -125,26 +124,27 @@ class Astro {
       return speeds[level][2];
     }
   }
-  
+
   randSize() {
-    const weightSize = Math.floor(Math.random() * 100)
+    const weightSize = Math.floor(Math.random() * 100);
     if (weightSize < 75) {
       return {
         size: 'large',
         width: 16,
         height: 16
-      }
+      };
     }else {
       return {
         size: 'small',
         width: 8,
         height: 8
-      }
+      };
     }
   }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Astro);
+
 
 /***/ }),
 /* 2 */
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas.width = 300;
   const view = new __WEBPACK_IMPORTED_MODULE_1__view_js__["a" /* default */](game, ctx);
   view.start();
-})
+});
 
 
 /***/ }),
@@ -192,7 +192,7 @@ class Game {
     this.lives = 5;
     this.level = 1;
   }
-  
+
   draw(ctx) {
     const astros = this.astros;
     this.checkCollision();
@@ -203,30 +203,31 @@ class Game {
     this.drawBullets(this.bullets, ctx);
     this.drawEnemies(this.astros.concat(this.hurricanes), ctx);
     this.displayGameState(ctx);
-    this.setLevel()
+    this.playHurricaneAudio();
+    this.setLevel();
   }
-  
+
   drawShip(ship, ctx) {
     const shipImg = new Image(30, 30);
     shipImg.src = './imgs/ship3.png';
     ctx.drawImage(shipImg, ship.posX, ship.posY);
   }
-  
+
   drawBullets(bullets, ctx) {
     bullets.forEach(bullet => {
       bullet.posY -= 6;
       if (bullet.posY < 0) {
-        this.removeObject(bullet)
+        this.removeObject(bullet);
       }
       ctx.fillStyle = "white";
       ctx.fillRect(bullet.posX, bullet.posY, 2, 6);
-    })
+    });
   }
-  
+
   drawEnemies(enemies, ctx) {
     enemies.forEach(enemy => {
-      enemy.posY += enemy.speed
-      enemy.posX += enemy.angle
+      enemy.posY += enemy.speed;
+      enemy.posX += enemy.angle;
       this.outOfBoundsCheck(enemy);
       let enemyImg;
       if (enemy.size.size === "large") {
@@ -240,21 +241,29 @@ class Game {
         enemyImg.src = './imgs/hurricane.png';
       }
       ctx.drawImage(enemyImg, enemy.posX, enemy.posY);
-    })
+    });
   }
-  
+
+  playHurricaneAudio() {
+    if (this.hurricanes.length > 0) {
+      const audio = new Audio('./sounds/space1.wav');
+      audio.volume = .2;
+      audio.play();
+    }
+  }
+
   displayGameState(ctx) {
     ctx.font = "12px Comic Sans MS";
     const color = this.hurricanes.length > 0 ? "red" : "white";
-    ctx.fillStyle = color
+    ctx.fillStyle = color;
     ctx.fillText(`Score :${this.score}`,10,20);
     ctx.fillText(`Lives :${this.lives}`,240,20);
   }
-  
+
   addBullet(bullet) {
-    this.bullets.push(bullet)
+    this.bullets.push(bullet);
   }
-  
+
   addAstro() {
     if (this.astros.length < 6 && (Math.random() > .95)) {
       this.astros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level));
@@ -263,25 +272,25 @@ class Game {
       this.hurricanes.push(new __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */](this.level));
     }
   }
-  
+
   outOfBoundsCheck(enemy) {
     if (enemy instanceof __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]) {
       if (enemy.posY > 300) {
         this.removeObject(enemy);
-        this.loseLife()
+        this.loseLife();
       }else if (enemy.posX <= 0 || enemy.posX + enemy.size.width > 300) {
         enemy.angle = enemy.angle * -1;
       }
     }else {
       if (enemy.posY > 300) {
-        this.score -= 20
+        this.score -= 20;
       }
       if (enemy.posX <= 0 || enemy.posX > 300 || enemy.posY > 300) {
         this.removeObject(enemy);
       }
     }
   }
-  
+
   removeObject(object) {
     if (object instanceof __WEBPACK_IMPORTED_MODULE_1__bullet_js__["a" /* default */]) {
      this.bullets.splice(this.bullets.indexOf(object), 1);
@@ -289,24 +298,33 @@ class Game {
      this.hurricanes.splice(this.hurricanes.indexOf(object), 1);
    } else if (object instanceof __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */]) {
      this.astros.splice(this.astros.indexOf(object), 1);
-   } 
+   }
   }
 
   checkCollision() {
     this.astros.concat(this.hurricanes).forEach(enemy => {
       if (((enemy.posY + enemy.size.height) >= 285) && this.shipHitEnemy(enemy)) {
-        this.removeObject(enemy)
-        this.loseLife()
+        this.removeObject(enemy);
+        this.loseLife();
       }else if (this.shotEnemy(enemy)){
-        this.resolveShotEnemy(enemy)
+        this.resolveShotEnemy(enemy);
+        const audio = new Audio('./sounds/beat2.wav');
+        audio.play();
       }
     });
   }
-  
+
   loseLife(){
     this.lives -= 1;
+    const container = document.querySelector(".container");
+    container.classList.add("shake");
+    const audio = new Audio('./sounds/bangLarge.wav');
+    audio.play();
+    setTimeout(function(){
+      container.classList.remove("shake");
+   }, 1000);
   }
-  
+
   shipHitEnemy(enemy) {
     const shipEnd = this.ship.posX + this.ship.width;
     const enemyEnd = enemy.posX + enemy.size.width;
@@ -321,7 +339,7 @@ class Game {
     }
     return false;
   }
-  
+
   shotEnemy(enemy) {
     const enemyXEnd = enemy.posX + enemy.size.width;
     const enemyYEnd = enemy.posY + enemy.size.height;
@@ -329,38 +347,38 @@ class Game {
     this.bullets.forEach(bullet => {
       if( ( (bullet.posX >= enemy.posX) && bullet.posX <= enemyXEnd) &&
       (bullet.posY >= enemy.posY && bullet.posY <= enemyYEnd ) ){
-        this.removeObject(bullet)
+        this.removeObject(bullet);
         hit = true;
       }
-    })
+    });
     return hit;
   }
-  
+
   resolveShotEnemy(enemy) {
     if (enemy.size.size === "small") {
       this.removeObject(enemy);
-      this.score += 100
+      this.score += 100;
     }else if (enemy.size.size === "large"){
-      const angle = enemy.angle > 0 ? enemy.angle : -enemy.angle 
-      const newAstroLeft =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, -.25, {
+      const angle = enemy.angle > 0 ? enemy.angle : -enemy.angle;
+      const newAstroLeft = new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, -.25, {
         size: 'small',
         width: 8,
         height: 6
-      })
-      const newAstroRight =  new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, .25, {
+      });
+      const newAstroRight = new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, .25, {
         size: 'small',
         width: 8,
         height: 6
-      })
+      });
       this.astros.push(newAstroLeft, newAstroRight);
-      this.removeObject(enemy)
+      this.removeObject(enemy);
       this.score += 50;
     }else if (enemy.size.size === "hurricane") {
       this.removeObject(enemy);
-      this.score += 200
+      this.score += 200;
     }
   }
-  
+
   setLevel() {
     if (this.score < 1000) {
       this.level = 1;
@@ -376,7 +394,7 @@ class Game {
       document.getElementById("game").className = "black";
     }
   }
-  
+
   checkGameOver() {
     if (this.lives < 0) {
       alert("Game Over. Click OK to play again!");
@@ -388,13 +406,14 @@ class Game {
       this.ship.posX =143;
     }
   }
-  
+
 }
 
 Game.DIM_X = 800;
 Game.DIM_Y = 600;
 
 /* harmony default export */ __webpack_exports__["a"] = (Game);
+
 
 /***/ }),
 /* 4 */
@@ -412,12 +431,14 @@ class Ship {
     this.height = 15;
     this.width = 8;
   }
-  
+
   shoot() {
     const bullet = new __WEBPACK_IMPORTED_MODULE_0__bullet__["a" /* default */](this.posX);
     this.game.addBullet(bullet);
+    const audio = new Audio('./sounds/fire.wav');
+    audio.play();
   }
-  
+
   move(dir) {
     if (dir === "left") {
       this.posX = this.posX <= 8 ? 0 : this.posX - 8;
@@ -429,6 +450,7 @@ class Ship {
 
 
 /* harmony default export */ __webpack_exports__["a"] = (Ship);
+
 
 /***/ }),
 /* 5 */
@@ -459,27 +481,58 @@ class View {
   constructor(game, ctx) {
     this.game = game;
     this.ctx = ctx;
+    this.stars = []
   }
-  
+
   bindKeyHandlers() {
-    const ship = this.game.ship
+    const ship = this.game.ship;
     key("left", () => { ship.move("left") });
     key("right", () => { ship.move("right") });
-    key("space", () => { ship.shoot() });
+    key("space", () => { ship.shoot() } );
   }
-  
+
   start() {
     this.bindKeyHandlers();
+    this.setStars();
+    const audio = new Audio('./sounds/throughspace.ogg');
+    audio.play();
+    this.addBackground(this.ctx);
     requestAnimationFrame(this.animate.bind(this));
+  }
+
+  addBackground(ctx) {
+    ctx.fillStyle = "white";
+    this.stars.forEach(([x, y]) => {
+      ctx.fillRect(x, y, 1, 1);
+    });
+    ctx.beginPath();
+    ctx.moveTo(0,250);
+    ctx.lineTo(50, 220);
+    ctx.lineTo(220, 260);
+    ctx.lineTo(260, 240);
+    ctx.lineTo(300, 240);
+
+    // ctx.lineTo(250, 150);
+    ctx.strokeStyle = "white";
+    ctx.stroke();
+  }
+
+  setStars() {
+    for(let i = 0; i < 200; i++) {
+      this.stars.push([Math.floor(Math.random() * 300),
+        Math.floor(Math.random() * 220)]);
+    }
   }
 
   animate() {
     this.game.draw(this.ctx);
+    this.addBackground(this.ctx);
     requestAnimationFrame(this.animate.bind(this));
   }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (View);
+
 
 /***/ })
 /******/ ]);
