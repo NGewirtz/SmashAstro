@@ -30,15 +30,15 @@ img {
 }
 
 .grey {
-  background-color: #6e7a8c;
+  background: linear-gradient(blue, #6e7a8c);
 }
 
 .blue {
-  background-color: cadetblue;
+  background: linear-gradient(black, blue)
 }
 
 .black {
-  background-color: black;
+  background: linear-gradient(#6e7a8c, black)
 }
 
 @keyframes shake {
