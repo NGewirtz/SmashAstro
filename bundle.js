@@ -83,63 +83,13 @@ class Bullet {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class Astro {
-  constructor(level, posX, posY, speed, angle, size) {
-    this.posX = posX || this.randX();
-    this.posY = posY || 0;
-    this.speed = speed || this.randSpeed(level);
-    this.angle = angle || 0;
-    this.size = size || this.randSize();
-  }
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__enemy__ = __webpack_require__(7);
 
-  randX() {
-    return Math.floor(Math.random() * 283);
-  }
 
-  randAngle() {
-    const angles = [-1.1, -.9, -.65, -.25, .25, .65, .9, 1.1];
-    const idx = Math.floor(Math.random() * angles.length);
-    return angles[idx];
-  }
-
-  randSpeed(level) {
-    const weightSpeed = Math.floor(Math.random() * 100);
-    const odds = {
-      1: [85, 40],
-      2: [50, 10],
-      3: [80, 35],
-      4: [50, 10]
-    };
-    const speeds = {
-      1: [2.25,1.5,.75],
-      2: [2.5,1.75,1],
-      3: [3.5,2.5,1.5],
-      4: [4,3,2]
-    };
-    if (weightSpeed > odds[level][0]) {
-      return speeds[level][0];
-    }else if (weightSpeed > odds[level][1]) {
-      return speeds[level][1];
-    }else {
-      return speeds[level][2];
-    }
-  }
-
-  randSize() {
-    const weightSize = Math.floor(Math.random() * 100);
-    if (weightSize < 75) {
-      return {
-        size: 'large',
-        width: 16,
-        height: 16
-      };
-    }else {
-      return {
-        size: 'small',
-        width: 8,
-        height: 8
-      };
-    }
+class Astro extends __WEBPACK_IMPORTED_MODULE_0__enemy__["a" /* default */] {
+  constructor(level, size, type, posX, posY, speed, angle) {
+    super(level, size, type, posX, posY, speed, angle);
+    this.score = this.size.width === 8 ? 200 : 100;
   }
 }
 
@@ -191,10 +141,10 @@ class Game {
     this.score = 0;
     this.lives = 5;
     this.level = 1;
+    this.sounds = false;
   }
 
   draw(ctx) {
-    const astros = this.astros;
     this.checkCollision();
     this.checkGameOver();
     this.addAstro();
@@ -230,22 +180,22 @@ class Game {
       enemy.posX += enemy.angle;
       this.outOfBoundsCheck(enemy);
       let enemyImg;
-      if (enemy.size.size === "large") {
-        enemyImg = new Image(16, 16);
-        enemyImg.src = './imgs/Asteroid2.png';
-      }else if (enemy.size.size === "small") {
-        enemyImg = new Image(8, 8);
-        enemyImg.src = './imgs/Asteroid3.png';
-      }else if (enemy.size.size === "hurricane") {
+      if (enemy.type === "hurricane") {
         enemyImg = new Image(16, 16);
         enemyImg.src = './imgs/hurricane.png';
+      }else if (enemy.size.width === 16) {
+        enemyImg = new Image(16, 16);
+        enemyImg.src = './imgs/Asteroid2.png';
+      }else if (enemy.size.width === 8) {
+        enemyImg = new Image(8, 8);
+        enemyImg.src = './imgs/Asteroid3.png';
       }
       ctx.drawImage(enemyImg, enemy.posX, enemy.posY);
     });
   }
 
   playHurricaneAudio() {
-    if (this.hurricanes.length > 0) {
+    if (this.hurricanes.length > 0 && this.sounds) {
       const audio = new Audio('./sounds/space1.wav');
       audio.volume = .2;
       audio.play();
@@ -308,18 +258,22 @@ class Game {
         this.loseLife();
       }else if (this.shotEnemy(enemy)){
         this.resolveShotEnemy(enemy);
-        const audio = new Audio('./sounds/beat2.wav');
-        audio.play();
+        this.playGameSounds('./sounds/beat2.wav')
       }
     });
+  }
+
+  playGameSounds(audioFile) {
+    if (this.sounds) {
+      new Audio(audioFile).play();
+    }
   }
 
   loseLife(){
     this.lives -= 1;
     const container = document.querySelector(".container");
     container.classList.add("shake");
-    const audio = new Audio('./sounds/bangLarge.wav');
-    audio.play();
+    this.playGameSounds('./sounds/bangLarge.wav');
     setTimeout(function(){
       container.classList.remove("shake");
    }, 1000);
@@ -355,28 +309,21 @@ class Game {
   }
 
   resolveShotEnemy(enemy) {
-    if (enemy.size.size === "small") {
-      this.removeObject(enemy);
-      this.score += 100;
-    }else if (enemy.size.size === "large"){
-      const angle = enemy.angle > 0 ? enemy.angle : -enemy.angle;
-      const newAstroLeft = new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, -.25, {
-        size: 'small',
-        width: 8,
-        height: 6
-      });
-      const newAstroRight = new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, enemy.posX, enemy.posY, null, .25, {
-        size: 'small',
-        width: 8,
-        height: 6
-      });
-      this.astros.push(newAstroLeft, newAstroRight);
-      this.removeObject(enemy);
-      this.score += 50;
-    }else if (enemy.size.size === "hurricane") {
-      this.removeObject(enemy);
-      this.score += 200;
+    if (enemy.size.width === 16 && enemy.type === "astro") {
+      const newAstros = this.createSmallAstros(enemy);
+      this.astros.push(...newAstros);
     }
+    this.score += enemy.score;
+    this.removeObject(enemy);
+  }
+
+  createSmallAstros(astro){
+    const newAstros = [];
+    const size = { height: 8, width: 8 };
+    [-Math.random()/2, Math.random()/2].forEach(angle => {
+      newAstros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level, size, "astro", astro.posX, astro.posY, undefined, angle));
+    });
+    return newAstros;
   }
 
   setLevel() {
@@ -407,6 +354,10 @@ class Game {
     }
   }
 
+  toggleSounds() {
+    this.sounds = !this.sounds;
+  }
+
 }
 
 Game.DIM_X = 800;
@@ -435,8 +386,7 @@ class Ship {
   shoot() {
     const bullet = new __WEBPACK_IMPORTED_MODULE_0__bullet__["a" /* default */](this.posX);
     this.game.addBullet(bullet);
-    const audio = new Audio('./sounds/fire.wav');
-    audio.play();
+    this.game.playGameSounds('./sounds/fire.wav');
   }
 
   move(dir) {
@@ -457,20 +407,19 @@ class Ship {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__astro_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__enemy_js__ = __webpack_require__(7);
 
 
-class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__astro_js__["a" /* default */] {
+class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__enemy_js__["a" /* default */] {
   constructor(level) {
-    super(level, null, null, .5 * level, null, {
-      size: 'hurricane',
-      width: 16,
-      height: 16
-    });
+    super(level, { height:16, width: 16 }, "hurricane");
+    this.speed = .5 * level;
+    this.score = 200;
   }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Hurricane);
+
 
 /***/ }),
 /* 6 */
@@ -481,23 +430,47 @@ class View {
   constructor(game, ctx) {
     this.game = game;
     this.ctx = ctx;
-    this.stars = []
+    this.stars = this.setStars();
+    this.music = this.setMusic();
+    this.volume = 0;
+    this.paused = false;
+  }
+
+  setMusic() {
+    const audio = new Audio('./sounds/throughspace.ogg');
+    audio.loop = true;
+    audio.volume = 0;
+    audio.play();
+    return audio;
+  }
+
+  setStars() {
+    const stars = [];
+    for(let i = 0; i < 200; i++) {
+      stars.push([Math.floor(Math.random() * 300),
+      Math.floor(Math.random() * 220)]);
+    }
+    return stars;
   }
 
   bindKeyHandlers() {
     const ship = this.game.ship;
-    key("left", () => { ship.move("left") });
-    key("right", () => { ship.move("right") });
-    key("space", () => { ship.shoot() } );
+    key("left", () => { ship.move("left"); } );
+    key("right", () => { ship.move("right"); });
+    key("space", () => { ship.shoot(); } );
+    key("m", () => { this.toggleAudio(); } );
+    key("p", () => { this.togglePaused(); })
   }
 
-  start() {
-    this.bindKeyHandlers();
-    this.setStars();
-    const audio = new Audio('./sounds/throughspace.ogg');
-    audio.play();
-    this.addBackground(this.ctx);
-    requestAnimationFrame(this.animate.bind(this));
+  drawBackgroundMountains(ctx) {
+    ctx.beginPath();
+    ctx.moveTo(0,250);
+    ctx.lineTo(50, 220);
+    ctx.lineTo(220, 260);
+    ctx.lineTo(260, 240);
+    ctx.lineTo(300, 240);
+    ctx.strokeStyle = "white";
+    ctx.stroke();
   }
 
   addBackground(ctx) {
@@ -505,33 +478,100 @@ class View {
     this.stars.forEach(([x, y]) => {
       ctx.fillRect(x, y, 1, 1);
     });
-    ctx.beginPath();
-    ctx.moveTo(0,250);
-    ctx.lineTo(50, 220);
-    ctx.lineTo(220, 260);
-    ctx.lineTo(260, 240);
-    ctx.lineTo(300, 240);
-
-    // ctx.lineTo(250, 150);
-    ctx.strokeStyle = "white";
-    ctx.stroke();
+    this.drawBackgroundMountains(ctx);
   }
 
-  setStars() {
-    for(let i = 0; i < 200; i++) {
-      this.stars.push([Math.floor(Math.random() * 300),
-        Math.floor(Math.random() * 220)]);
+  start() {
+    this.bindKeyHandlers();
+    requestAnimationFrame(this.animate.bind(this));
+  }
+
+  toggleAudio() {
+    this.volume = this.volume === 0 ? 1 : 0;
+    this.music.volume = this.volume;
+    this.game.toggleSounds();
+  }
+
+  togglePaused() {
+    this.paused = !this.paused;
+    if (this.paused) {
+      this.displayPaused();
+    }else{
+      requestAnimationFrame(this.animate.bind(this));
     }
   }
 
-  animate() {
-    this.game.draw(this.ctx);
-    this.addBackground(this.ctx);
-    requestAnimationFrame(this.animate.bind(this));
+  displayPaused() {
+    this.ctx.font = "32px Comic Sans MS";
+    this.ctx.fillStyle = "red";
+    this.ctx.fillText("PAUSED",85,120);
   }
+
+  animate() {
+    if (!this.paused) {
+      this.game.draw(this.ctx);
+      this.addBackground(this.ctx);
+      requestAnimationFrame(this.animate.bind(this));
+    }
+  }
+
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (View);
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Enemy {
+  constructor(level, size = this.randSize(), type = "astro", posX = this.randX(), posY = 0, speed = this.randSpeed(level), angle = 0) {
+    this.posX = posX;
+    this.type = type;
+    this.posY = posY;
+    this.speed = speed;
+    this.angle = angle;
+    this.size = size;
+  }
+
+  randX() {
+    return Math.floor(Math.random() * 283);
+  }
+
+  randSpeed(level) {
+    const weightSpeed = Math.floor(Math.random() * 100);
+    if (weightSpeed > Enemy.ODDS[level][0]) {
+      return Enemy.SPEEDS[level][0];
+    }else if (weightSpeed > Enemy.ODDS[level][1]) {
+      return Enemy.SPEEDS[level][1];
+    }else {
+      return Enemy.SPEEDS[level][2];
+    }
+  }
+
+  randSize() {
+    const weightSize = Math.floor(Math.random() * 100);
+    return weightSize < 75 ? { height: 16, width: 16 } : { height: 8, width: 8 };
+  }
+
+}
+
+Enemy.ODDS = {
+  1: [85, 40],
+  2: [50, 10],
+  3: [80, 35],
+  4: [50, 10]
+};
+
+Enemy.SPEEDS = {
+  1: [2.25,1.5,.75],
+  2: [2.5,1.75,1],
+  3: [3.5,2.5,1.5],
+  4: [4,3,2]
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Enemy);
 
 
 /***/ })
