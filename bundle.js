@@ -89,7 +89,8 @@ class Bullet {
 class Astro extends __WEBPACK_IMPORTED_MODULE_0__enemy__["a" /* default */] {
   constructor(level, size, type, posX, posY, speed, angle) {
     super(level, size, type, posX, posY, speed, angle);
-    this.score = this.size.width === 8 ? 200 : 100;
+    this.score = this.size.width === 8 ? 100 : 50;
+    this.img = this.size.width === 8 ? "./imgs/Asteroid3.png" : "./imgs/Asteroid2.png";
   }
 }
 
@@ -114,7 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas.height = 300;
   canvas.width = 300;
   const view = new __WEBPACK_IMPORTED_MODULE_1__view_js__["a" /* default */](game, ctx);
-  view.start();
+  const startButton = document.getElementById("start");
+  startButton.addEventListener("click", () => {
+    view.start();
+  });
 });
 
 
@@ -147,7 +151,7 @@ class Game {
   draw(ctx) {
     this.checkCollision();
     this.checkGameOver();
-    this.addAstro();
+    this.addEnemies();
     ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
     this.drawShip(this.ship, ctx);
     this.drawBullets(this.bullets, ctx);
@@ -179,17 +183,8 @@ class Game {
       enemy.posY += enemy.speed;
       enemy.posX += enemy.angle;
       this.outOfBoundsCheck(enemy);
-      let enemyImg;
-      if (enemy.type === "hurricane") {
-        enemyImg = new Image(16, 16);
-        enemyImg.src = './imgs/hurricane.png';
-      }else if (enemy.size.width === 16) {
-        enemyImg = new Image(16, 16);
-        enemyImg.src = './imgs/Asteroid2.png';
-      }else if (enemy.size.width === 8) {
-        enemyImg = new Image(8, 8);
-        enemyImg.src = './imgs/Asteroid3.png';
-      }
+      const enemyImg = new Image;
+      enemyImg.src = enemy.img;
       ctx.drawImage(enemyImg, enemy.posX, enemy.posY);
     });
   }
@@ -214,7 +209,7 @@ class Game {
     this.bullets.push(bullet);
   }
 
-  addAstro() {
+  addEnemies() {
     if (this.astros.length < 6 && (Math.random() > .95)) {
       this.astros.push(new __WEBPACK_IMPORTED_MODULE_2__astro_js__["a" /* default */](this.level));
     }
@@ -224,20 +219,13 @@ class Game {
   }
 
   outOfBoundsCheck(enemy) {
-    if (enemy instanceof __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]) {
-      if (enemy.posY > 300) {
-        this.removeObject(enemy);
+    if(enemy.posY > 300){
+      if (enemy instanceof __WEBPACK_IMPORTED_MODULE_3__hurricane_js__["a" /* default */]) {
         this.loseLife();
-      }else if (enemy.posX <= 0 || enemy.posX + enemy.size.width > 300) {
-        enemy.angle = enemy.angle * -1;
-      }
-    }else {
-      if (enemy.posY > 300) {
+      }else{
         this.score -= 20;
       }
-      if (enemy.posX <= 0 || enemy.posX > 300 || enemy.posY > 300) {
-        this.removeObject(enemy);
-      }
+      this.removeObject(enemy);
     }
   }
 
@@ -252,13 +240,14 @@ class Game {
   }
 
   checkCollision() {
-    this.astros.concat(this.hurricanes).forEach(enemy => {
+    const enemies = this.astros.concat(this.hurricanes);
+    enemies.forEach(enemy => {
       if (((enemy.posY + enemy.size.height) >= 285) && this.shipHitEnemy(enemy)) {
         this.removeObject(enemy);
         this.loseLife();
       }else if (this.shotEnemy(enemy)){
         this.resolveShotEnemy(enemy);
-        this.playGameSounds('./sounds/beat2.wav')
+        this.playGameSounds('./sounds/beat2.wav');
       }
     });
   }
@@ -329,29 +318,29 @@ class Game {
   setLevel() {
     if (this.score < 1000) {
       this.level = 1;
-      document.getElementById("game").className = "black";
     }else if (this.score >= 1000 && this.score < 4000) {
       this.level = 2;
-      document.getElementById("game").className = "blue";
     }else if (this.score >= 4000 && this.score < 10000){
       this.level = 3;
-      document.getElementById("game").className = "grey";
     }else {
       this.level = 4;
-      document.getElementById("game").className = "black";
     }
   }
 
   checkGameOver() {
     if (this.lives < 0) {
       alert("Game Over. Click OK to play again!");
-      this.score = 0;
-      this.lives = 5;
-      this.astros = [];
-      this.hurricanes = [];
-      this.bullets = [];
-      this.ship.posX =143;
+      this.resetGame();
     }
+  }
+
+  resetGame() {
+    this.score = 0;
+    this.lives = 5;
+    this.astros = [];
+    this.hurricanes = [];
+    this.bullets = [];
+    this.ship.posX =143;
   }
 
   toggleSounds() {
@@ -415,6 +404,7 @@ class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__enemy_js__["a" /* default *
     super(level, { height:16, width: 16 }, "hurricane");
     this.speed = .5 * level;
     this.score = 200;
+    this.img = "./imgs/meteor2.gif";
   }
 }
 
@@ -434,6 +424,7 @@ class View {
     this.music = this.setMusic();
     this.volume = 0;
     this.paused = false;
+    this.viewInstructions = true;
   }
 
   setMusic() {
@@ -473,7 +464,7 @@ class View {
     ctx.stroke();
   }
 
-  addBackground(ctx) {
+  drawBackground(ctx) {
     ctx.fillStyle = "white";
     this.stars.forEach(([x, y]) => {
       ctx.fillRect(x, y, 1, 1);
@@ -483,6 +474,8 @@ class View {
 
   start() {
     this.bindKeyHandlers();
+    game.style.display = "inline";
+    instructions.style.display = "none"
     requestAnimationFrame(this.animate.bind(this));
   }
 
@@ -507,10 +500,29 @@ class View {
     this.ctx.fillText("PAUSED",85,120);
   }
 
+  setBackgroundColor() {
+    const level = this.game.level;
+    const background = document.getElementById("game");
+    switch(level) {
+      case 1:
+        background.className = "black";
+        break;
+      case 2:
+        background.className = "blue";
+        break;
+      case 3:
+        background.className = "grey";
+        break;
+      case 4:
+        background.className = "black";
+    }
+  }
+
   animate() {
     if (!this.paused) {
       this.game.draw(this.ctx);
-      this.addBackground(this.ctx);
+      this.drawBackground(this.ctx);
+      this.setBackgroundColor();
       requestAnimationFrame(this.animate.bind(this));
     }
   }
@@ -552,7 +564,9 @@ class Enemy {
 
   randSize() {
     const weightSize = Math.floor(Math.random() * 100);
-    return weightSize < 75 ? { height: 16, width: 16 } : { height: 8, width: 8 };
+    const small = { height: 8, width: 8 };
+    const large = { height: 16, width: 16 };
+    return weightSize < 75 ? large : small;
   }
 
 }

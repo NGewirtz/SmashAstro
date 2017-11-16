@@ -1,14 +1,23 @@
-canvas {
+canvas, #instructions {
   height: 600px;
   width: 600px;
   border: 5px solid white;
-  display: inline;
+  display: none;
 }
 
-h1 {
+#instructions {
+  display: block;
+  margin: 0 auto;
+  background-color: black;
+}
+
+h1, p {
   color: white;
   text-align: center;
   font-family: 'Fjalla One', sans-serif;
+}
+
+h1 {  
   font-size: 36px;
 }
 
