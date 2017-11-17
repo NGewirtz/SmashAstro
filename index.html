@@ -10,14 +10,44 @@
     <link rel="icon" href="./imgs/favicon.png" type="image/x-icon" />
   </head>
   <body>
-    <h1>S m a s h A s t r o</h1>
+    <h1 class="header">S m a s h A s t r o</h1>
+    <aside class="left-aside">
+      <h3>Controls</h3>
+      <p>Left/Right: Move</p>
+      <p>Spacebar: Shoot</p>
+      <p>P: Pause</p>
+      <p>S: Toggle Sound</p>
+    </aside>
+    <aside class="right-aside">
+      <h3>Points</h3>
+      <p>Large Asteroid: 50</p>
+      <p>Small Asteroid: 100</p>
+      <p>Meteor: 200</p>
+      <p>Ground Hit: -20</p>
+    </aside>
     <div class="container">
       <canvas id="game"></canvas>
-      <section id="instructions">
+      <main id="instructions">
         <h1>Instructions</h1>
-        <p>Shoot Stuff</p>
+        <section>
+          <img class="instruction-images" src="./imgs/ship3.png" />
+          <p>Control your ship to protect the ground from falling objects.</p>
+        </section>
+        <section>
+          <img class="instruction-images" src="./imgs/meteor2.gif" />
+          <p>Shoot the meteors before they hit the ground or you will lose a life.</p>
+        </section>
+        <section>
+          <img class="instruction-images" src="./imgs/Asteroid2.png" />
+          <p>Large asteroids split into two smaller asteroids when hit.</p>
+        </section>
+        <section>
+          <img class="instruction-images small" src="./imgs/Asteroid2.png" />
+          <p>If your ship is hit by any size asteroid you will lose a life. If an asteroid hits the ground you will lose points.</p>
+        </section>
+        <p class="instructions-bottom-text">Score points by shooting objects before they hit the ground. As your score grows you will advance to later levels, the background will change, and enemies will move faster. Controls are on the left, and point values are on the right. Click the start button below to play! </p>
         <button id="start">START</button>
-      </section>
+      </main>
     </div>
   </body>
 </html>

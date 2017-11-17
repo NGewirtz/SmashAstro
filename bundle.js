@@ -146,6 +146,7 @@ class Game {
     this.lives = 5;
     this.level = 1;
     this.sounds = false;
+    this.gameOver = false;
   }
 
   draw(ctx) {
@@ -201,8 +202,9 @@ class Game {
     ctx.font = "12px Comic Sans MS";
     const color = this.hurricanes.length > 0 ? "red" : "white";
     ctx.fillStyle = color;
+    const displayLives = this.lives === -1 ? 0 : this.lives;
     ctx.fillText(`Score :${this.score}`,10,20);
-    ctx.fillText(`Lives :${this.lives}`,240,20);
+    ctx.fillText(`Lives :${displayLives}`,240,20);
   }
 
   addBullet(bullet) {
@@ -329,18 +331,20 @@ class Game {
 
   checkGameOver() {
     if (this.lives < 0) {
-      alert("Game Over. Click OK to play again!");
-      this.resetGame();
+      this.gameOver = true;
     }
   }
 
-  resetGame() {
+  resetGame(cb) {
     this.score = 0;
     this.lives = 5;
     this.astros = [];
     this.hurricanes = [];
     this.bullets = [];
     this.ship.posX =143;
+    this.gameOver = false;
+    this.level = 1;
+    document.removeEventListener("keydown", cb);
   }
 
   toggleSounds() {
@@ -449,8 +453,8 @@ class View {
     key("left", () => { ship.move("left"); } );
     key("right", () => { ship.move("right"); });
     key("space", () => { ship.shoot(); } );
-    key("m", () => { this.toggleAudio(); } );
-    key("p", () => { this.togglePaused(); })
+    key("s", () => { this.toggleAudio(); } );
+    key("p", () => { this.togglePaused(); });
   }
 
   drawBackgroundMountains(ctx) {
@@ -475,7 +479,7 @@ class View {
   start() {
     this.bindKeyHandlers();
     game.style.display = "inline";
-    instructions.style.display = "none"
+    instructions.style.display = "none";
     requestAnimationFrame(this.animate.bind(this));
   }
 
@@ -500,6 +504,20 @@ class View {
     this.ctx.fillText("PAUSED",85,120);
   }
 
+  handleGameOver() {
+    this.ctx.font = "32px Comic Sans MS";
+    this.ctx.fillStyle = "red";
+    this.ctx.fillText("GAME OVER",60,120);
+    this.ctx.font = "16px Comic Sans MS";
+    this.ctx.fillText("Press R to play again.",75,180);
+    const cb = document.addEventListener("keydown", (e) => {
+      if(e.key === "r") {
+        this.game.resetGame(cb);
+        requestAnimationFrame(this.animate.bind(this));
+      }
+    });
+  }
+
   setBackgroundColor() {
     const level = this.game.level;
     const background = document.getElementById("game");
@@ -519,7 +537,9 @@ class View {
   }
 
   animate() {
-    if (!this.paused) {
+    if (this.game.gameOver) {
+      this.handleGameOver();
+    }else if (!this.paused) {
       this.game.draw(this.ctx);
       this.drawBackground(this.ctx);
       this.setBackgroundColor();
