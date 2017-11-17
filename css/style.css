@@ -11,12 +11,12 @@ canvas, #instructions {
   background-color: black;
 }
 
-h1, p, h3 {
+h1, p, h3, h4 {
   color: white;
   text-align: center;
 }
 
-h1, h3 {
+h1, h3, h4 {
   font-family: 'Fjalla One', sans-serif;
 }
 
@@ -24,8 +24,17 @@ h1 {
   font-size: 36px;
 }
 
-.header {  
-  padding: 30px 0;
+h4 {
+  font-size: 30px;
+}
+
+a {
+  text-decoration: none;
+}
+
+.header {
+  padding: 20px 0;
+  position: relative;
 }
 
 h3 {
@@ -60,11 +69,15 @@ button:hover {
   background-color: grey
 }
 
+h4:hover, .fa:hover {
+  color: grey;
+}
+
 body {
   background-image: url("../imgs/brd2.jpg");
   background-repeat: no-repeat;
   background-size: cover;
-  height: 100vh;
+  height: 100%;
 }
 
 img {
@@ -109,6 +122,16 @@ aside p {
 .container {
    width: 100%;
    text-align:center;
+}
+
+.by-div {
+  margin-top: 100px;
+}
+
+.fa {
+  color: white;
+  margin: 0 100px;
+  box-sizing: border-box;
 }
 
 .grey {

@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const startButton = document.getElementById("start");
   startButton.addEventListener("click", () => {
     view.start();
+    view.toggleAudio();
   });
 });
 
