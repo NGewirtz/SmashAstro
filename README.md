@@ -1,9 +1,9 @@
 SmashAstro
-[Astrosmash](https://en.wikipedia.org/wiki/Astrosmash)
+[SmashAstro](http://neilgewirtz.com/SmashAstro)
 
 ## MVPS
 * player shoots
-* small and big astros 
+* small and big astros
 * * big astros break into 2 smaller astros
 * hurricanes
 * track player lives
@@ -13,7 +13,7 @@ SmashAstro
 
 
 ## Bonus
-* extra enemies - UFOS, small hurricanes, guided missles
+* extra enemies - UFOS, small hurricanes, guided missile
 
 
 ## Timeline
