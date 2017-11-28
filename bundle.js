@@ -83,18 +83,55 @@ class Bullet {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__enemy__ = __webpack_require__(7);
-
-
-class Astro extends __WEBPACK_IMPORTED_MODULE_0__enemy__["a" /* default */] {
-  constructor(level, size, type, posX, posY, speed, angle) {
-    super(level, size, type, posX, posY, speed, angle);
-    this.score = this.size.width === 8 ? 100 : 50;
-    this.img = this.size.width === 8 ? "./imgs/Asteroid3.png" : "./imgs/Asteroid2.png";
+class Enemy {
+  constructor(level, size = this.randSize(), type = "astro", posX = this.randX(), posY = 0, speed = this.randSpeed(level), angle = 0) {
+    this.posX = posX;
+    this.type = type;
+    this.posY = posY;
+    this.speed = speed;
+    this.angle = angle;
+    this.size = size;
   }
+
+  randX() {
+    return Math.floor(Math.random() * 283);
+  }
+
+  randSpeed(level) {
+    const weightSpeed = Math.floor(Math.random() * 100);
+    if (weightSpeed > Enemy.ODDS[level][0]) {
+      return Enemy.SPEEDS[level][0];
+    }else if (weightSpeed > Enemy.ODDS[level][1]) {
+      return Enemy.SPEEDS[level][1];
+    }else {
+      return Enemy.SPEEDS[level][2];
+    }
+  }
+
+  randSize() {
+    const weightSize = Math.floor(Math.random() * 100);
+    const small = { height: 8, width: 8 };
+    const large = { height: 16, width: 16 };
+    return weightSize < 75 ? large : small;
+  }
+
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (Astro);
+Enemy.ODDS = {
+  1: [85, 40],
+  2: [50, 10],
+  3: [80, 35],
+  4: [50, 10]
+};
+
+Enemy.SPEEDS = {
+  1: [2.25,1.5,.75],
+  2: [2.5,1.75,1],
+  3: [3.5,2.5,1.5],
+  4: [4,3,2]
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (Enemy);
 
 
 /***/ }),
@@ -104,7 +141,7 @@ class Astro extends __WEBPACK_IMPORTED_MODULE_0__enemy__["a" /* default */] {
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__game_js__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__view_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__view_js__ = __webpack_require__(7);
 
 
 
@@ -130,8 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ship_js__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bullet_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astro_js__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hurricane_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astro_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hurricane_js__ = __webpack_require__(6);
 
 
 
@@ -401,7 +438,26 @@ class Ship {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__enemy_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__enemy__ = __webpack_require__(1);
+
+
+class Astro extends __WEBPACK_IMPORTED_MODULE_0__enemy__["a" /* default */] {
+  constructor(level, size, type, posX, posY, speed, angle) {
+    super(level, size, type, posX, posY, speed, angle);
+    this.score = this.size.width === 8 ? 100 : 50;
+    this.img = this.size.width === 8 ? "./imgs/Asteroid3.png" : "./imgs/Asteroid2.png";
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Astro);
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__enemy_js__ = __webpack_require__(1);
 
 
 class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__enemy_js__["a" /* default */] {
@@ -417,7 +473,7 @@ class Hurricane extends __WEBPACK_IMPORTED_MODULE_0__enemy_js__["a" /* default *
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -552,62 +608,6 @@ class View {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (View);
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Enemy {
-  constructor(level, size = this.randSize(), type = "astro", posX = this.randX(), posY = 0, speed = this.randSpeed(level), angle = 0) {
-    this.posX = posX;
-    this.type = type;
-    this.posY = posY;
-    this.speed = speed;
-    this.angle = angle;
-    this.size = size;
-  }
-
-  randX() {
-    return Math.floor(Math.random() * 283);
-  }
-
-  randSpeed(level) {
-    const weightSpeed = Math.floor(Math.random() * 100);
-    if (weightSpeed > Enemy.ODDS[level][0]) {
-      return Enemy.SPEEDS[level][0];
-    }else if (weightSpeed > Enemy.ODDS[level][1]) {
-      return Enemy.SPEEDS[level][1];
-    }else {
-      return Enemy.SPEEDS[level][2];
-    }
-  }
-
-  randSize() {
-    const weightSize = Math.floor(Math.random() * 100);
-    const small = { height: 8, width: 8 };
-    const large = { height: 16, width: 16 };
-    return weightSize < 75 ? large : small;
-  }
-
-}
-
-Enemy.ODDS = {
-  1: [85, 40],
-  2: [50, 10],
-  3: [80, 35],
-  4: [50, 10]
-};
-
-Enemy.SPEEDS = {
-  1: [2.25,1.5,.75],
-  2: [2.5,1.75,1],
-  3: [3.5,2.5,1.5],
-  4: [4,3,2]
-};
-
-/* harmony default export */ __webpack_exports__["a"] = (Enemy);
 
 
 /***/ })
