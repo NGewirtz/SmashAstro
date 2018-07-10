@@ -147,13 +147,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const game = new __WEBPACK_IMPORTED_MODULE_0__game_js__["a" /* default */]();
-  canvas.height = 300;
-  canvas.width = 300;
-  const view = new __WEBPACK_IMPORTED_MODULE_1__view_js__["a" /* default */](game, ctx);
   const startButton = document.getElementById("start");
   startButton.addEventListener("click", () => {
+    const ctx = canvas.getContext('2d');
+    const game = new __WEBPACK_IMPORTED_MODULE_0__game_js__["a" /* default */]();
+    canvas.height = 300;
+    canvas.width = 300;
+    const view = new __WEBPACK_IMPORTED_MODULE_1__view_js__["a" /* default */](game, ctx);
     view.start();
     view.toggleAudio();
   });
