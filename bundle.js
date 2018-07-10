@@ -196,7 +196,7 @@ class Game {
     this.drawBullets(this.bullets, ctx);
     this.drawEnemies(this.astros.concat(this.hurricanes), ctx);
     this.displayGameState(ctx);
-    this.playHurricaneAudio();
+    this.borderColorHurricaneAlert();
     this.setLevel();
   }
 
@@ -228,12 +228,10 @@ class Game {
     });
   }
 
-  playHurricaneAudio() {
-    if (this.hurricanes.length > 0 && this.sounds) {
-      const audio = new Audio('./sounds/space1.wav');
-      audio.volume = .2;
-      audio.play();
-    }
+  borderColorHurricaneAlert() {
+    const canvas = document.getElementById("game");
+    const color = this.hurricanes.length > 0 ? "red" : "white";
+    canvas.style.borderColor = color;
   }
 
   displayGameState(ctx) {
@@ -282,7 +280,8 @@ class Game {
   checkCollision() {
     const enemies = this.astros.concat(this.hurricanes);
     enemies.forEach(enemy => {
-      if (((enemy.posY + enemy.size.height) >= 285) && this.shipHitEnemy(enemy)) {
+      if (((enemy.posY + enemy.size.height) >= 285)
+      && this.shipHitEnemy(enemy)) {
         this.removeObject(enemy);
         this.loseLife();
       }else if (this.shotEnemy(enemy)){
