@@ -188,6 +188,7 @@ class Game {
   }
 
   draw(ctx) {
+    const level = this.checkLevel();
     this.checkCollision();
     this.checkGameOver();
     this.addEnemies();
@@ -197,7 +198,7 @@ class Game {
     this.drawEnemies(this.astros.concat(this.hurricanes), ctx);
     this.displayGameState(ctx);
     this.borderColorHurricaneAlert();
-    this.setLevel();
+    this.setLevel(level);
   }
 
   drawShip(ship, ctx) {
@@ -240,6 +241,7 @@ class Game {
     ctx.fillStyle = color;
     const displayLives = this.lives === -1 ? " -" : this.lives;
     ctx.fillText(`Score :${this.score}`,10,20);
+    ctx.fillText(this.getNextLevelText(),10,40);
     ctx.fillText(`Lives :${displayLives}`,240,20);
   }
 
@@ -354,16 +356,20 @@ class Game {
     return newAstros;
   }
 
-  setLevel() {
+  checkLevel() {
     if (this.score < 1000) {
-      this.level = 1;
+      return 1;
     }else if (this.score >= 1000 && this.score < 4000) {
-      this.level = 2;
+      return 2;
     }else if (this.score >= 4000 && this.score < 10000){
-      this.level = 3;
+      return 3;
     }else {
-      this.level = 4;
+      return 4;
     }
+  }
+
+  setLevel(level) {
+    this.level = level;
   }
 
   checkGameOver() {
@@ -388,6 +394,17 @@ class Game {
     this.sounds = !this.sounds;
   }
 
+  getNextLevelText() {
+    if(this.level === 1) {
+      return "Next Level :1000";
+    }else if(this.level === 2) {
+      return "Next Level :4000";
+    }else if(this.level === 3){
+      return "Next Level :10000";
+    }else {
+      return "Final Level!";
+    }
+  }
 }
 
 Game.DIM_X = 800;
